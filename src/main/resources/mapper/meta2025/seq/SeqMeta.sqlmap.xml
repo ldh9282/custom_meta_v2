@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="SeqMeta">
+	
+	<select id="selectSeqMetaSno" parameterType="CustomMap" resultType="String">
+		SELECT /* SeqMeta.selectSeqMetaSno */ NEXTVAL('META.TB005_SEQ') AS SEQ_META_SNO
+	</select>
+	
+	<insert id="insertSeqMeta">
+		INSERT INTO /* SeqMeta.insertTableMeta */
+		    META.TB005(
+		        테이블메타일련번호,
+		        시퀀스메타일련번호,
+		        스키마명,
+		        시퀀스명,
+		        시스템생성자,
+		        시스템수정자,
+		        시스템생성일,
+		        시스템수정일
+		    )
+		VALUES
+		    ( 
+		    #{tableMetaSno} :: BIGINT, 
+		    #{seqMetaSno} :: BIGINT, 
+		    #{schemaName}, 
+		    #{tableName} || '_SEQ', 
+		    #{sysCreator}, 
+		    #{sysCreator}, 
+		    now(), 
+		    now())
+	</insert>
+	
+	
+	<update id="createSeq" parameterType="CustomMap">
+		CREATE /* SeqMeta.createSeq */ SEQUENCE ${schemaName}.${tableName}_SEQ
+	</update>
+	
+	<select id="selectSeqMetaInfoList" parameterType="CustomMap" resultType="CustomMap">
+		SELECT
+			*
+		FROM
+		(
+		SELECT /* SeqMeta.selectSeqMetaInfoList */
+			TB003.테이블메타일련번호 AS TABLE_META_SNO
+			, TB005.시퀀스메타일련번호 AS SEQ_META_SNO
+			, TB003.스키마명 AS SCHEMA_NAME
+			, TB003.테이블명 AS TABLE_NAME
+			, TB003.테이블설명 AS TABLE_DESC
+			, TB005.시퀀스명 AS SEQ_NAME
+			, TO_CHAR(TB003.시스템생성일, 'YYYY-MM-DD HH24:MI:SS') AS SYS_CREATED_AT
+			, TO_CHAR(TB003.시스템수정일, 'YYYY-MM-DD HH24:MI:SS') AS SYS_MODIFIED_AT
+			, COUNT(1) OVER() AS COUNT
+		FROM 
+		META.TB003 TB003, 
+		META.TB005 TB005
+		WHERE TB003.테이블메타일련번호 = TB005.테이블메타일련번호
+		<if test="tableMetaSno != null and tableMetaSno != ''">
+		AND TB005.테이블메타일련번호 = #{tableMetaSno} :: BIGINT
+		</if>
+		<if test="seqMetaSno != null and seqMetaSno != ''">
+		AND TB005.시퀀스메타일련번호 = #{seqMetaSno} :: BIGINT
+		</if>
+		<if test="seqName != null and seqName != ''">
+		AND TB005.시퀀스명 LIKE '%'||#{seqName}||'%'
+		</if>
+		<if test="schemaName != null and schemaName != ''">
+		AND TB003.스키마명 LIKE '%'||#{schemaName}||'%'
+		</if>
+		<if test="tableName != null and tableName != ''">
+		AND TB003.테이블명 LIKE '%'||#{tableName}||'%'
+		</if>
+		<if test="tableDesc != null and tableDesc != ''">
+		AND TB003.테이블설명 LIKE '%'||#{tableDesc}||'%'
+		</if>
+		ORDER BY TB005.테이블메타일련번호 DESC, TB005.시퀀스메타일련번호 ASC
+		) A
+		OFFSET (#{pageNum} :: BIGINT - 1) * #{rowAmountPerPage} :: BIGINT  
+		LIMIT #{rowAmountPerPage} :: BIGINT
+	</select>
+	
+	<update id="dropSeq" parameterType="CustomMap">
+		DROP /* SeqMeta.dropSeq */ SEQUENCE ${schemaName}.${seqName}
+	</update>
+	
+	<update id="deleteSeqMeta" parameterType="CustomMap">
+		DELETE /* SeqMeta.deleteSeqMeta */
+		FROM META.TB005
+		WHERE 테이블메타일련번호 = #{tableMetaSno} :: BIGINT
+	</update>
+	
+	<select id="selectSeqMetaInfoDetail" parameterType="CustomMap" resultType="CustomMap">
+		SELECT *
+		FROM
+		(
+		SELECT /* SeqMeta.selectSeqMetaInfoDetail */
+			TB003.테이블메타일련번호 AS TABLE_META_SNO
+			, TB005.시퀀스메타일련번호 AS SEQ_META_SNO
+			, TB003.스키마명 AS SCHEMA_NAME
+			, TB003.테이블명 AS TABLE_NAME
+			, TB003.테이블설명 AS TABLE_DESC
+			, TB005.시퀀스명 AS SEQ_NAME
+			, TO_CHAR(TB003.시스템생성일, 'YYYY-MM-DD HH24:MI:SS') AS SYS_CREATED_AT
+			, TO_CHAR(TB003.시스템수정일, 'YYYY-MM-DD HH24:MI:SS') AS SYS_MODIFIED_AT
+		FROM 
+		META.TB003 TB003, 
+		META.TB005 TB005
+		WHERE TB003.테이블메타일련번호 = TB005.테이블메타일련번호
+		AND TB005.테이블메타일련번호 = #{tableMetaSno} :: BIGINT
+		) A
+		LIMIT 1
+	</select>
+</mapper>

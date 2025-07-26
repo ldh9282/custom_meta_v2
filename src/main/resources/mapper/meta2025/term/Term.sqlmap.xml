@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Term">
+	
+	<select id="selectTermSno" parameterType="CustomMap" resultType="String">
+		SELECT /* Term.selectTermSno */ NEXTVAL('META.TB008_SEQ') AS TERM_SNO
+	</select>
+	
+	<insert id="insertTerm">
+		INSERT INTO /* Term.insertTerm */
+		    META.TB008(
+		        도메인일련번호,
+		        용어일련번호,
+		        용어명,
+		        용어카멜명,
+		        용어스네이크명,
+		        시스템생성자,
+		        시스템수정자,
+		        시스템생성일,
+		        시스템수정일
+		    )
+		VALUES
+		    ( 
+		    #{domainSno} :: BIGINT, 
+		    #{termSno} :: BIGINT, 
+		    #{termName}, 
+		    #{termCamelName}, 
+		    #{termSnakeName}, 
+		    #{sysCreator}, 
+		    #{sysCreator}, 
+		    now(), 
+		    now())
+	</insert>
+	
+	<select id="selectTerm" parameterType="CustomMap" resultType="CustomMap">
+		SELECT /* Term.selectTerm */
+		    도메인일련번호 AS DOMAIN_SNO,
+		    용어일련번호 AS TERM_SNO,
+		    용어명 AS TERM_NAME,
+		    용어카멜명 AS TERM_CAMEL_NAME,
+		    용어스네이크명 AS TERM_SNAKE_NAME,
+		    시스템생성자 AS SYS_CREATOR,
+		    시스템수정자 AS SYS_MODIFIER,
+		    TO_CHAR(시스템생성일, 'YYYY-MM-DD HH24:MI:SS') AS SYS_CREATED_AT,
+		    TO_CHAR(시스템수정일, 'YYYY-MM-DD HH24:MI:SS') AS SYS_MODIFIED_AT
+		FROM
+		    META.TB008
+		WHERE 1 = 1
+			AND 도메인일련번호 = #{domainSno} :: BIGINT
+			AND 용어일련번호 = #{termSno} :: BIGINT
+	</select>
+	
+	<select id="selectTermList" parameterType="CustomMap" resultType="CustomMap">
+		SELECT
+			*
+		FROM
+		(
+		SELECT /* Term.selectTermList */
+		    TB008.도메인일련번호 AS DOMAIN_SNO,
+		    TB008.용어일련번호 AS TERM_SNO,
+		    TB008.용어명 AS TERM_NAME,
+		    TB008.용어카멜명 AS TERM_CAMEL_NAME,
+		    TB008.용어스네이크명 AS TERM_SNAKE_NAME,
+		    TB007.도메인명 AS DOMAIN_NAME,
+		    TB007.도메인타입 AS DOMAIN_TYPE,
+		    TB008.시스템생성자 AS SYS_CREATOR,
+		    TB008.시스템수정자 AS SYS_MODIFIER,
+		    TO_CHAR(TB008.시스템생성일, 'YYYY-MM-DD HH24:MI:SS') AS SYS_CREATED_AT,
+		    TO_CHAR(TB008.시스템수정일, 'YYYY-MM-DD HH24:MI:SS') AS SYS_MODIFIED_AT,
+		    COUNT(1) OVER() AS COUNT
+		FROM
+			META.TB008 TB008,
+			META.TB007 TB007
+		WHERE 1 = 1
+    	AND TB008.도메인일련번호 = TB007.도메인일련번호
+    	<if test="domainSno != null and domainSno != ''">
+		AND TB008.도메인일련번호 = #{domainSno} :: BIGINT
+		</if>
+    	<if test="termSno != null and termSno != ''">
+		AND TB008.용어일련번호 = #{termSno} :: BIGINT
+		</if>
+		<if test="termName != null and termName != ''">
+		AND TB008.용어명 LIKE '%'||#{termName}||'%'
+		</if>
+    	<if test="termCamelName != null and termCamelName != ''">
+		AND TB008.용어카멜명 LIKE '%'||#{termCamelName}||'%'
+		</if>
+    	<if test="termSnakeName != null and termSnakeName != ''">
+		AND TB008.용어스네이크명 LIKE '%'||#{termSnakeName}||'%'
+		</if>
+		ORDER BY TB008.용어일련번호 DESC
+		) A
+		OFFSET (#{pageNum} :: BIGINT - 1) * #{rowAmountPerPage} :: BIGINT  
+		LIMIT #{rowAmountPerPage} :: BIGINT
+	</select>
+	
+	<select id="selectTermScList" parameterType="CustomMap" resultType="CustomMap">
+		SELECT /* Term.selectTermScList */
+		    TB008.도메인일련번호 AS DOMAIN_SNO,
+		    TB008.용어일련번호 AS TERM_SNO,
+		    TB008.용어명 AS TERM_NAME,
+		    TB008.용어카멜명 AS TERM_CAMEL_NAME,
+		    TB008.용어스네이크명 AS TERM_SNAKE_NAME,
+		    TB007.도메인타입 AS DOMAIN_TYPE,
+		    TB008.시스템생성자 AS SYS_CREATOR,
+		    TB008.시스템수정자 AS SYS_MODIFIER,
+		    TO_CHAR(TB008.시스템생성일, 'YYYY-MM-DD HH24:MI:SS') AS SYS_CREATED_AT,
+		    TO_CHAR(TB008.시스템수정일, 'YYYY-MM-DD HH24:MI:SS') AS SYS_MODIFIED_AT,
+		    COUNT(1) OVER() AS COUNT				
+		FROM
+		    META.TB008 TB008
+		    , META.TB007 TB007
+		WHERE 1 = 1
+			AND TB008.도메인일련번호 = TB007.도메인일련번호
+			<if test="termName != null and termName != ''">
+			AND TB008.용어명 LIKE '%'||#{termName}||'%'
+			</if>
+			AND TB008.용어명 NOT IN ('시스템생성자', '시스템수정자', '시스템생성일', '시스템수정일')
+		ORDER BY TB008.용어명 DESC
+	</select>
+	
+	<update id="deleteTermInfo" parameterType="CustomMap">
+		DELETE /* Term.deleteTermInfo */
+		FROM META.TB008
+		WHERE 1 = 1
+		AND 도메인일련번호 = #{domainSno} :: BIGINT
+		<if test="termSno != null and termSno != ''">
+		AND 용어일련번호 = #{termSno} :: BIGINT
+		</if>
+	</update>
+	
+	<select id="selectTermRegCheck" parameterType="CustomMap" resultType="CustomMap">
+		SELECT /* Term.selectTermRegCheck */
+		(
+			SELECT 
+			    CASE WHEN COUNT(1) >= 1 THEN 'N'
+			         ELSE 'Y'
+			    END
+			FROM
+			    META.TB008
+			WHERE 용어명 = #{termName}
+		) AS TERM_NAME_ABLE_YN
+		, (
+			SELECT 
+			    CASE WHEN COUNT(1) >= 1 THEN 'Y'
+			         ELSE 'N'
+		        END
+			FROM
+			    META.TB007
+			WHERE 도메인명 = #{domainName}
+		) AS DOMAIN_NAME_ABLE_YN
+	</select>
+	
+	<select id="selectTermByName" parameterType="CustomMap" resultType="CustomMap">
+	    SELECT /* Term.selectTermByName */
+	        TB008.도메인일련번호 AS DOMAIN_SNO,
+	        TB008.용어일련번호 AS TERM_SNO,
+	        TB008.용어명 AS TERM_NAME,
+	        TB008.용어카멜명 AS TERM_CAMEL_NAME,
+	        TB008.용어스네이크명 AS TERM_SNAKE_NAME,
+	        TB007.도메인명 AS DOMAIN_NAME,
+	        TB007.도메인타입 AS DOMAIN_TYPE,
+	        TB008.시스템생성자 AS SYS_CREATOR,
+	        TB008.시스템수정자 AS SYS_MODIFIER,
+	        TO_CHAR(TB008.시스템생성일, 'YYYY-MM-DD HH24:MI:SS') AS SYS_CREATED_AT,
+	        TO_CHAR(TB008.시스템수정일, 'YYYY-MM-DD HH24:MI:SS') AS SYS_MODIFIED_AT
+	    FROM
+	        META.TB007 TB007
+	        , META.TB008 TB008
+	    WHERE 1 = 1
+	        AND TB008.도메인일련번호 = TB007.도메인일련번호
+	        AND 용어명 = #{termName}
+	</select>
+	
+</mapper>

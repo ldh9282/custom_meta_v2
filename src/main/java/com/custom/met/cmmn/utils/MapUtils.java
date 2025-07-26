@@ -1,0 +1,85 @@
+package com.custom.met.cmmn.utils;
+
+import java.lang.reflect.Field;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import com.custom.met.cmmn.exception.CustomException;
+import com.custom.met.cmmn.exception.CustomExceptionCode;
+import com.custom.met.cmmn.model.CustomMap;
+
+public class MapUtils {
+
+	/**
+	 * <pre>
+	 * 메소드명: paramsValidation
+	 * 설명: 파라미터 유효성검사
+	 * </pre>
+	 * @param params
+	 * @param validationList new String[][] { { "key", "format" } }
+	 */
+	public static void paramsValidation(CustomMap params, String[][] validationList) {
+		for (String key : params.keySet()) {
+			if (params.get(key) instanceof String) {
+				params.put(key, params.getString(key).trim());
+			}
+		}
+		
+		if (validationList != null) {
+			for (String[] validation : validationList) {
+				String key = validation[0];
+				
+				String format = "";
+				
+				if (validation.length == 2) {
+					format = validation[1];
+				}
+				
+				if ("required".equals(format)) {
+					if ("".equals(params.getString(key))) {
+						throw new CustomException(CustomExceptionCode.ERR600, new String[] { key });
+					}
+				}
+				
+				if ("number".equals(format)) {
+					if (!"".equals(params.getString(key))) {
+						if (!StringUtils.isNumber(params.getString(key))) {
+							throw new CustomException(CustomExceptionCode.ERR601, new String[] { key, params.getString(key) });
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * <pre>
+	 * 메소드명: objectToMap
+	 * 설명: 객체를 맵으로 변환
+	 * </pre>
+	 * @param obj
+	 * @return
+	 */
+	public static Map<String, Object> objectToMap(Object obj) {
+		Map<String, Object> map = new LinkedHashMap<>();
+		
+		Class<?> theClass = obj.getClass();
+		
+		Field[] fields = theClass.getDeclaredFields();
+		
+		for (Field field : fields) {
+			field.setAccessible(true);
+			try {
+				Object value = field.get(obj);
+				map.put(field.getName(), value);
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return map;
+		
+	}
+}

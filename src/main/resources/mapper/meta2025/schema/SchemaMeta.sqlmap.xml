@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="SchemaMeta">
+	
+	
+	<update id="createSchema" parameterType="CustomMap">
+		CREATE /* SchemaMeta.createSchema */ SCHEMA ${schemaName}
+	</update>
+	
+	<update id="addSchemaComment" parameterType="CustomMap">
+        COMMENT /* SchemaMeta.addSchemaComment */ ON SCHEMA ${schemaName} IS '${schemaDesc}'
+    </update>
+	
+	<update id="dropSchema" parameterType="CustomMap">
+		DROP /* SchemaMeta.dropSchema */ SCHEMA ${schemaName}
+	</update>
+	
+	<select id="selectSchemaMetaSno" parameterType="CustomMap" resultType="String">
+		SELECT /* SchemaMeta.selectSchemaMetaSno */ NEXTVAL('META.TB006_SEQ') AS SCHEMA_META_SNO
+	</select>
+	
+	<select id="selectSchemaMeta" parameterType="CustomMap" resultType="CustomMap">
+		SELECT /* SchemaMeta.selectSchemaMeta */
+		    스키마메타일련번호 AS SCHEMA_META_SNO,
+		    스키마명 AS SCHEMA_NAME,
+		    스키마설명 AS SCHEMA_DESC,
+		    시스템생성자 AS SYS_CREATOR,
+		    시스템수정자 AS SYS_MODIFIER,
+		    TO_CHAR(시스템생성일, 'YYYY-MM-DD HH24:MI:SS') AS SYS_CREATED_AT,
+		    TO_CHAR(시스템수정일, 'YYYY-MM-DD HH24:MI:SS') AS SYS_MODIFIED_AT
+		FROM
+		    META.TB006
+		WHERE 스키마메타일련번호 = #{schemaMetaSno} :: BIGINT  
+	</select>
+	
+	<select id="selectSchemaMetaInfoList" parameterType="CustomMap" resultType="CustomMap">
+		
+		SELECT /* SchemaMeta.selectSchemaMetaInfoList */
+			*
+		FROM
+		(
+			SELECT
+				TB006.스키마메타일련번호 AS SCHEMA_META_SNO
+				, TB006.스키마명 AS SCHEMA_NAME
+				, TB006.스키마설명 AS SCHEMA_DESC
+				, TO_CHAR(TB006.시스템생성일, 'YYYY-MM-DD HH24:MI:SS') AS SYS_CREATED_AT
+				, TO_CHAR(TB006.시스템수정일, 'YYYY-MM-DD HH24:MI:SS') AS SYS_MODIFIED_AT
+				, COUNT(1) OVER() AS COUNT
+			FROM 
+			META.TB006 TB006 
+			WHERE 1 = 1
+			<if test="schemaMetaSno != null and schemaMetaSno != ''">
+			AND TB006.스키마메타일련번호 = #{schemaMetaSno} :: BIGINT
+			</if>
+			<if test="schemaName != null and schemaName != ''">
+			AND TB006.스키마명 LIKE '%'||#{schemaName}||'%'
+			</if>
+			<if test="schemaDesc != null and schemaDesc != ''">
+			AND TB006.스키마설명 LIKE '%'||#{schemaDesc}||'%'
+			</if>
+			ORDER BY TB006.스키마메타일련번호 DESC
+		) A
+		OFFSET (#{pageNum} :: BIGINT - 1) * #{rowAmountPerPage} :: BIGINT  
+		LIMIT #{rowAmountPerPage} :: BIGINT
+	</select>
+	
+	<select id="selectSchemaMetaScInfoList" parameterType="CustomMap" resultType="CustomMap">
+	    SELECT /* SchemaMeta.selectSchemaMetaScInfoList */
+	        TB006.스키마메타일련번호 AS SCHEMA_META_SNO
+	        , TB006.스키마명 AS SCHEMA_NAME
+	        , TB006.스키마설명 AS SCHEMA_DESC
+	        , TO_CHAR(TB006.시스템생성일, 'YYYY-MM-DD HH24:MI:SS') AS SYS_CREATED_AT
+	        , TO_CHAR(TB006.시스템수정일, 'YYYY-MM-DD HH24:MI:SS') AS SYS_MODIFIED_AT
+	        , COUNT(1) OVER() AS COUNT
+	    FROM 
+	    META.TB006 TB006 
+	    WHERE 1 = 1
+	    <if test="schemaName != null and schemaName != ''">
+	    AND TB006.스키마명 LIKE '%'||#{schemaName}||'%'
+	    </if>
+	    ORDER BY TB006.스키마명 DESC
+	</select>
+	
+	<insert id="insertSchemaMeta">
+		INSERT INTO /* SchemaMeta.insertSchemaMeta */
+		    META.TB006(
+		        스키마메타일련번호,
+		        스키마명,
+		        스키마설명,
+		        시스템생성자,
+		        시스템수정자,
+		        시스템생성일,
+		        시스템수정일
+		    )
+		VALUES
+		    ( 
+		    #{schemaMetaSno} :: BIGINT, 
+		    #{schemaName}, 
+		    #{schemaDesc}, 
+		    #{sysCreator}, 
+		    #{sysCreator}, 
+		    now(), 
+		    now())
+	</insert>
+	
+	<update id="deleteSchemaMeta" parameterType="CustomMap">
+		DELETE /* SchemaMeta.deleteSchemaMeta */
+		FROM META.TB006
+		WHERE 스키마메타일련번호 = #{schemaMetaSno} :: BIGINT
+	</update>
+	
+</mapper>
