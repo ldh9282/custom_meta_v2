@@ -5,7 +5,7 @@
 		<section>
 	    	<div class="container">
 		      	<div class="text-center my-3">
-		        	<span>&copy; <span id="currentYear"></span>. 딱국 All rights reserved</span>
+		        	<span>&copy; <span id="currentYear"></span>. ldh9282 All rights reserved</span>
 		      	</div>
 
 			  	<a href="javascript:scrollToTop();" id="topBtn">TOP</a>

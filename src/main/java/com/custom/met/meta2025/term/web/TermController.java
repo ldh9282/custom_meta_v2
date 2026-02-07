@@ -10,11 +10,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.custom.met.cmmn.exception.CustomException;
+import com.custom.met.cmmn.exception.CustomExceptionCode;
 import com.custom.met.cmmn.model.CustomMap;
 import com.custom.met.cmmn.paging.PagingCreator;
 import com.custom.met.cmmn.security.utils.SecurityUtils;
+import com.custom.met.cmmn.utils.ExcelUtils;
 import com.custom.met.cmmn.utils.StringUtils;
 import com.custom.met.cmmn.web.CustomController;
 import com.custom.met.meta2025.term.service.TermService;
@@ -134,13 +138,88 @@ public class TermController extends CustomController {
 		CustomMap resultMap = new CustomMap();
 		
 		if (log.isDebugEnabled()) { log.debug("params ::: " + params); }
-		
-		CustomMap termScInfoListMap = termService.getTermScInfoList(params);
-		
-		List<CustomMap> termScInfoList = termScInfoListMap.getCustomMapList("termScInfoList");
-		resultMap.put("termScInfoList", termScInfoList);
-		resultMap.put("count", termScInfoListMap.getString("count"));
-		
-		return getResponse(resultMap);
+		throw new CustomException(CustomExceptionCode.ERR999, new String[] { "test" });
+//		CustomMap termScInfoListMap = termService.getTermScInfoList(params);
+//		
+//		List<CustomMap> termScInfoList = termScInfoListMap.getCustomMapList("termScInfoList");
+//		resultMap.put("termScInfoList", termScInfoList);
+//		resultMap.put("count", termScInfoListMap.getString("count"));
+//		
+//		return getResponse(resultMap);
+	}
+	
+	/**
+	 * <pre>
+	 * 메서드명: mettm06
+	 * 설명: 용어 업로드 페이지
+	 * </pre>
+	 * @param customMap
+	 * @return
+	 * @throws CustomException
+	 */
+	@RequestMapping("/METTM06")
+	public ModelAndView mettm06(ModelAndView modelAndView, @RequestParam Map<String, Object> map) throws CustomException {
+		CustomMap requestMap = new CustomMap(map);
+		throw new CustomException(CustomExceptionCode.ERR999, new String[] { "test" });
+//		if (log.isDebugEnabled()) { log.debug("METTM06 ::: " + requestMap); }
+//		
+//		
+//		modelAndView.setViewName("meta2025/term/termUpload");
+//		
+//		return modelAndView;
+	}
+	
+	/**
+	 * <pre>
+	 * 메서드명: mettm07
+	 * 설명: 용어 엑셀 다건등록요청
+	 * </pre>
+	 * @param customMap
+	 * @return
+	 * @throws CustomException
+	 */
+	@PostMapping("/METTM07")
+	@ResponseBody
+	public Object mettm07(@RequestParam("file") MultipartFile file) throws CustomException {
+		CustomMap resultMap = new CustomMap();
+		throw new CustomException(CustomExceptionCode.ERR999, new String[] { "test" });
+//		try {
+//			CustomMap requestMap = ExcelUtils.convertExceltoDataList(file);
+//			termService.exceluploadTermInfo(requestMap);
+//		} catch (CustomException e) {
+//			throw new CustomException(CustomExceptionCode.ERR999, new String[] { e.getMessage() }, e);
+//		} catch (Exception e) {
+//			throw new CustomException(CustomExceptionCode.ERR999, new String[] { e.getMessage() }, e);
+//		}
+//		
+//		return getResponse(resultMap);
+	}
+	
+	/**
+	 * <pre>
+	 * 메서드명: mettm07
+	 * 설명: 용어 엑셀 다건등록요청
+	 * </pre>
+	 * @param customMap
+	 * @return
+	 * @throws CustomException
+	 */
+	@PostMapping("/METTM08")
+//	@ResponseBody
+	public Object mettm08(@RequestParam("file2") MultipartFile file, ModelAndView modelAndView) throws CustomException {
+		CustomMap resultMap = new CustomMap();
+		throw new CustomException(CustomExceptionCode.ERR999, new String[] { "test" });
+//		try {
+//			CustomMap requestMap = ExcelUtils.convertExceltoDataList(file);
+//			termService.exceluploadTermInfo(requestMap);
+//		} catch (CustomException e) {
+//			throw new CustomException(CustomExceptionCode.ERR999, new String[] { e.getMessage() }, e);
+//		} catch (Exception e) {
+//			throw new CustomException(CustomExceptionCode.ERR999, new String[] { e.getMessage() }, e);
+//		}
+//
+//		modelAndView.setViewName("meta2025/term/termUpload");
+//		return modelAndView;
+//		return getResponse(resultMap);
 	}
 }

@@ -82,4 +82,21 @@ public class MapUtils {
 		return map;
 		
 	}
+	
+	/**
+	 * <pre>
+	 * 메서드명: isAllNVL
+	 * 설명:  map 의 모든 값이 null 또는 empty 인지 체크 (엑셀 빈행 체크)
+	 * </pre>
+	 * @param map
+	 * @return boolean
+	 */
+    public static boolean isAllNVL(Map<String, Object> map) {
+        for (Object value : map.values()) {
+            if (value != null && !value.toString().trim().isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

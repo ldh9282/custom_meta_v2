@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.custom.met.cmmn.utils.StringUtils;
 import com.custom.met.cmmn.web.CustomController;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,11 +12,12 @@ import jakarta.servlet.http.HttpServletRequest;
 @RestControllerAdvice
 public class CustomExceptionHandler extends CustomController {
 
+	
 	@ExceptionHandler(CustomException.class)
 	public Object handleCustomException(HttpServletRequest request, CustomException e) {
-		boolean isAjaxRequest = "application/json".equals(request.getHeader("Content-Type"));
-		
-		if (isAjaxRequest) {
+		boolean isAjax = StringUtils.NVL(request.getHeader("Content-Type"), "").indexOf("application/json") >= 0
+				|| "XMLHttpRequest".equals(request.getHeader("X-Requested-With"));
+		if (isAjax) {
 			return getErrorResponse(e);
 		} else {
 			ModelAndView modelAndView = new ModelAndView();

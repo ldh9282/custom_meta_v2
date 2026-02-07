@@ -8,6 +8,9 @@ import org.springframework.stereotype.Service;
 import com.custom.met.cmmn.exception.CustomException;
 import com.custom.met.cmmn.exception.CustomExceptionCode;
 import com.custom.met.cmmn.model.CustomMap;
+import com.custom.met.cmmn.security.utils.SecurityUtils;
+import com.custom.met.cmmn.utils.ArrayUtils;
+import com.custom.met.cmmn.utils.StringUtils;
 
 @Service
 public class TermService {
@@ -85,5 +88,56 @@ public class TermService {
 		}
 		
 		return resultMap;
+	}
+	
+	public CustomMap exceluploadTermInfo(CustomMap customMap) throws CustomException  {
+		CustomMap resultMap = new CustomMap();
+		
+		List<CustomMap> dataList = customMap.getCustomMapList("dataList");
+		
+		
+		try {
+			for (CustomMap item : dataList) {
+				boolean checkRequiredValues = ArrayUtils.checkRequiredValues(new String[] {
+						item.getString("용어명")
+						, item.getString("용어영문명")
+						, item.getString("도메인명")
+				});
+				
+				if (checkRequiredValues) {
+					
+					CustomMap requestMap = new CustomMap();
+					requestMap.put("termName", item.getString("용어명"));
+					if (item.getString("용어영문명").contains("_")) {
+						requestMap.put("termCamelName", StringUtils.snake2Camel(item.getString("용어영문명")));
+						requestMap.put("termSnakeName", item.getString("용어영문명"));
+					} else {
+						requestMap.put("termCamelName", item.getString("용어영문명"));
+						requestMap.put("termSnakeName", StringUtils.camel2Snake(item.getString("용어영문명")));
+					}
+					requestMap.put("domainName", item.getString("도메인명"));
+					requestMap.put("sysCreator", SecurityUtils.getUsername());
+					
+					CustomMap termRegCheck = termDao.selectTermRegCheck(requestMap);
+					
+					if ("Y".equals(termRegCheck.getString("domainNameAbleYn")) && "Y".equals(termRegCheck.getString("termNameAbleYn"))) {
+						
+						String termSno = termDao.selectTermSno();
+						requestMap.put("domainSno", termRegCheck.getString("domainSno"));
+						requestMap.put("termSno", termSno);
+						
+						
+						
+//						termDao.insertTerm(requestMap);
+					}
+				}
+			}
+			
+		} catch (Exception e) {
+			throw new CustomException(CustomExceptionCode.ERR521, new String[] {"용어정보"}, e);
+		}
+		
+		return resultMap;
+		
 	}
 }
